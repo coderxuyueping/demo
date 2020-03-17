@@ -1,0 +1,45 @@
+package com.baidu.yuepingxu.demo.handler;
+
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+
+/**
+ * @author xuyueping
+ * @date 2020-03-17
+ * @describe
+ */
+public class HandlerTest {
+    public static void main(String[] args) {
+        // 通过这个创建一个looper对象，把looper对象放到一个threadLocal中
+        // threadLocal的作用是在每一个线程创建一个副本
+        // threadLocal 里面维护了一个ThreadLocalMap，ThreadLocalMap里面有一个Entry key是threadLocal，value是object，也就是Looper对象
+        // 虽然key是弱引用，但是因为value不是，所以还是会有内存泄露，记得不用了remove
+        // 在第一次set的时候，ThreadLocalMap需要create  thread.threadLocals = new ThreadLocalMap(this, firstValue);
+        // 每一个thread里有一个ThreadLocalMap，在之后的set中取出当前thread的map进行set，key为threadLocal，value为looper
+        // new Looper的时候会创建一个MessageQueue
+        Looper.prepare();
+
+
+        Handler handler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+            }
+        };
+
+        // 会调用myLooper获取threadLocal里的looper对象，也就是每一个线程都有属于自己的looper
+        // 开启不停止的循环 Message msg = queue.next();取出消息队列里的下一个message
+        // 找到message后通过msg.target.dispatchMessage(msg);发送消息到handler  每一个message里有一个target，它就是handler对象
+        // 主线程在main函数里开启里looper，死循环为什么不会阻塞？因为看源码有一句，如果停止里消息机制就是抛异常
+        // dispatchMessage在handler中有三种处理方式：第一种通过message的callback处理，就是一个Runnable
+        // 第二种通过handler设置的一个callback接口处理
+        // 第三种就是通过handler里的一个空方法handleMessage来处理
+        Looper.loop();
+
+        // MessageQueue里面有一个message对列，其实就是一个链表结构，按照时间先后插入
+        Message message = Message.obtain();
+        message.what = 1;
+        handler.sendMessage(message);
+    }
+}
