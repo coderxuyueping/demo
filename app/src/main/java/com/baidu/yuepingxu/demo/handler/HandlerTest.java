@@ -35,6 +35,7 @@ public class HandlerTest {
         // dispatchMessage在handler中有三种处理方式：第一种通过message的callback处理，就是一个Runnable
         // 第二种通过handler设置的一个callback接口处理
         // 第三种就是通过handler里的一个空方法handleMessage来处理
+        // 在主线程创建handler和开启loop，在子线程发送消息的时候，因为dispatchMessage是在looper线程执行的，所以是在主线程处理消息
         Looper.loop();
 
         // MessageQueue里面有一个message对列，其实就是一个链表结构，按照时间先后插入
