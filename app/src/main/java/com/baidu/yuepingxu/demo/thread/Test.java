@@ -51,7 +51,7 @@ public class Test {
 
     public static void main(String[] args){
         // 两个线程打印A1B2C3D  线程通信
-        demon();
+        method3();
     }
 
     private static void method1(){
@@ -131,25 +131,6 @@ public class Test {
         final ReentrantLock lock = new ReentrantLock();
         final Condition condition1 = lock.newCondition();
         final Condition condition2 = lock.newCondition();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try{
-                    lock.lock(); // 类似monitorenter
-                    for(char c : c1){
-                        System.out.print(c);
-                        condition2.signal();
-                        condition1.await();
-                    }
-                    condition2.signal();
-                }catch (Exception e) {
-                    e.printStackTrace();
-                }finally {
-                    lock.unlock(); // monitorexit
-                }
-
-            }
-        },"t1").start();
 
         new Thread(new Runnable() {
             @Override
@@ -169,6 +150,26 @@ public class Test {
                 }
             }
         },"t2").start();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try{
+                    lock.lock(); // 类似monitorenter
+                    for(char c : c1){
+                        System.out.print(c);
+                        condition2.signal();
+                        condition1.await();
+                    }
+                    condition2.signal();
+                }catch (Exception e) {
+                    e.printStackTrace();
+                }finally {
+                    lock.unlock(); // monitorexit
+                }
+
+            }
+        },"t1").start();
     }
 
     private static void demon(){

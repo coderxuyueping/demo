@@ -8,6 +8,9 @@ import android.os.Message;
  * @author xuyueping
  * @date 2020-03-17
  * @describe
+ * 为什么looper.loop不会阻塞主线程，因为查看main源码可以发现，android是由事件驱动的，如果队列里没有消息主线程进入休眠，不会占用cpu资源，
+ * 如果有消息到来唤醒，loop不会阻塞，唯一导致anr的就是dispatchMessage里的消息处理过长导致anr
+ * 当loop方法执行完了，整个应用的生命周期也结束
  */
 public class HandlerTest {
     public static void main(String[] args) {

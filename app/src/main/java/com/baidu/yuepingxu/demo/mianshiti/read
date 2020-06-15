@@ -1,0 +1,40 @@
+1.ACTION_CANCEL的触发时机是在子view接收到了前驱事件（接收到了down和up，down就是前驱事件）后，后续事件被父view拦截就会给子view下发cancel事件
+  比如在一个开关按钮上一直滑动，然后滑出开关按钮到了其他的view上，开关view就会收到cancel事件，如果只在up上处理，没有在cancel处理会导致开关按钮
+  停留在你手指离开的地方。
+
+2.hashCode根据hash算法得到一个对象的内存地址，但是因为算法的原因，有可能会有多个不同的对象得到同一个hash值放到一个散列表中
+  equals  object中是==，判断两个对象的内存地址，Integer和String重写了比较数值
+  hashcode相同equals不一定相同，equals相同hashcode一定相同
+  基本数据类型==比较值，对象比较内存地址
+  equals比较内存地址
+
+3.hashMap（数组加链表，可以null（key entry））默认长度16（2的幂次方），为什么要是2的幂次方：因为
+  0000 0000 0000 0111 =15
+  0000 0000 0000 0000 =0
+  1111 1111 1111 1111 =15
+  根据&运算得到数组下标刚好是0-15，用位运算效率比%取余高
+
+  推荐设置hashMap初始容量 = 已知元素格式/0.75+1 为了减少hash冲突导致扩容
+  扩容机制：集合元素个数达到了阀值 16*0.75并且要插入的元素有了其他元素发生了hash冲突，扩容两倍长度
+  扩容在并发下会发生环形死循环
+  设置了初始容量也会自动求出最小的那个2的幂次方
+  static final int tableSizeFor(int cap) {
+          int n = cap - 1;
+          n |= n >>> 1;
+          n |= n >>> 2;
+          n |= n >>> 4;
+          n |= n >>> 8;
+          n |= n >>> 16;
+          return (n < 0) ? 1 : (n >= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+      }
+
+   ConcurrentHashMap线程安全的hashMap，采用分段锁降低了锁粒度
+   hashTable 线程安全，采用synchronized在get set 方法加锁
+
+
+4.binder原理
+  只需要一次拷贝，采用mmap技术
+  A进程和B进程通过底层虚拟机，虚拟机的虚拟地址映射了一个真实的物理地址，B进程也映射到和虚拟机相同的物理地址，在A进程拷贝数据到虚拟机后，B进程也能自动更新
+  aidl：通过service绑定到服务端，服务端返回一个binder
+
+

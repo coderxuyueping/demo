@@ -33,11 +33,20 @@ import java.util.concurrent.atomic.AtomicInteger;
  * （线程执行完任务后通过循环再次从任务队列中取出任务进行执行，代码片段如下
  * while (task != null || (task = getTask()) != null) {}）。
  *
+ * 不允许Executors创建线程池，而是通过ThreadPoolExecutor，这样可以更加清晰的知道线程池运行规则，避免资源耗尽
+ * FixedThreadPool和singleThreadPool允许请求队列的长队为int最大值，可能会堆积大量的请求，造成oom
+ * CachedThreadPool和ScheduleThreadPool允许创建的线程数量为int最大值，可能会堆积大量的请求，造成oom
+ *
+ * 什么情况下用线程池
+ * 1.单个任务执行时间短，否则会占用线程池的缓存，造成大量任务堆积
+ * 2.有大量任务需要处理
+ *
+ * 阻塞队列：在任意时刻不管并发有多高，只有一个线程可以进行入队和出队，线程安全，在队列满了的情况，读可以，写是阻塞的
  */
 public class ThreadPoolTest {
     public static void main(String[] args) {
         // 工作队列
-        LinkedBlockingQueue blockingQueue = new LinkedBlockingQueue(100);
+        LinkedBlockingQueue blockingQueue = new LinkedBlockingQueue(10);
         // 线程创建工厂
         ThreadFactory threadFactory = new ThreadFactory() {
             // 原子类cas
@@ -56,7 +65,8 @@ public class ThreadPoolTest {
         // 第五个是阻塞队列
         // 第六个是线程创建工厂
         // 第七个是拒绝策略，在最大线程池满了并且阻塞队列也满了再添加任务进来会执行拒绝策略
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 100, 100,
+        // 核心线程1个，除了核心的其他线程为3-1=2
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 3, 100,
                 TimeUnit.SECONDS, blockingQueue, threadFactory, new RejectedExecutionHandler() {
             @Override
             public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
